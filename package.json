@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Yiusifer/tinyapp/issues"
   },
-  "homepage": "https://github.com/Yiusifer/tinyapp#readme"
+  "homepage": "https://github.com/Yiusifer/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
 }
