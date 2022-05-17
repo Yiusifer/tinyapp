@@ -8,6 +8,9 @@ const { json } = require("express/lib/response");
 const req = require("express/lib/request");
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//Importing the middleware
+app.use(express.urlencoded({ extended: true }));
+
 
 // Generate random short URL
 function generateRandomString() {
@@ -55,8 +58,15 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  urlDatabase[shortURL] = [Object.values(req.body)];
-  //console.log(urlDatabase)
+  const longURL = req.body.name
+
+  /*if(!longURL) {
+    return res.send('Cant be empty');
+  }*/
+
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`)
 });
 
 // Redirects to corresponding long URL after receiving short URL
@@ -66,6 +76,6 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase.shortURL;
+  delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 })
