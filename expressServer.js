@@ -1,15 +1,18 @@
+//Importing the middleware
 const express = require("express");
-const res = require("express/lib/response");
 const app = express();
-const PORT = 7000; // default port 7000
-
+const res = require("express/lib/response");
+var cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const { json } = require("express/lib/response");
 const req = require("express/lib/request");
-app.use(bodyParser.urlencoded({ extended: true }));
 
-//Importing the middleware
+const PORT = 7000; // default port 7000
+
+
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
 // Generate random short URL
@@ -46,6 +49,10 @@ const users = {
 
 app.get("/", (req, res) => {
   res.send("Hello!");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("_header", templateVars);
 });
 
 app.listen(PORT, () => {
@@ -65,7 +72,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
 
@@ -102,7 +109,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   // Update urlDatabase with new url (longURL)
-  urlDatabase[req.params.id] = res.body.longURL
+  urlDatabase[req.params.id] = req.body.longUrl
+  res.redirect('/urls')
+})
+
+// login route
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  return res.redirect("/urls");
 })
 
 // Handling user registration
@@ -115,4 +129,9 @@ app.post("/register", (req, res) => {
     users["user" + currentUserId] = {id: currentUserId, email: req.body.email, password: req.body.password};
     res.cookie("user_id", currentUserId);
     res.redirect("/urls");
+})
+
+app.post("logout", (req, res) => {
+  res.render("_header")
+  res.clearCookie("user_id")
 })
