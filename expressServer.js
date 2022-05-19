@@ -23,7 +23,25 @@ function generateRandomString() {
 function generateRandomId() {
   return Math.random().toString(36).slice(2, 8);
 }
-
+// Searches for existing email in database
+function emailSearcher(userEmail) {
+  for (const user in users) {
+    if (users[user].email === userEmail) {
+      return users[user];
+    }
+  }
+  return false;
+}
+// Searches for existing password in database
+//REFRACTOR
+function passwordSearcher(userPassword) {
+  for (const user in users) {
+    if (users[user].password === userPassword) {
+      return true;
+    }
+  }
+  return false;
+}
 
 app.set("view engine", "ejs");
 
@@ -39,7 +57,7 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
+  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
@@ -72,8 +90,13 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  const templateVars = { urls: urlDatabase, user_id: req.cookies.user_id };
+ /* if (res.cookie(user_id)) {
+
+  }*/
+  console.log(res.cookie("user_id"))
   res.render("urls_index", templateVars);
+
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -113,25 +136,46 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls')
 })
 
-// login route
-app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  return res.redirect("/urls");
-})
-
 // Handling user registration
 app.get("/register", (req, res) => {
   res.render("registration");
 })
 
 app.post("/register", (req, res) => {
-    const currentUserId = generateRandomId();
-    users["user" + currentUserId] = {id: currentUserId, email: req.body.email, password: req.body.password};
-    res.cookie("user_id", currentUserId);
-    res.redirect("/urls");
+  if ((!req.body.email) || (!req.body.password)) {
+    return res.status(400).send("Uh oh, something went wrong: Error 404");
+  }
+
+  if (emailSearcher(req.body.email)) {
+    return res.status(400).send("This email is already in use: Error 404");
+  }
+
+  const currentUserId = generateRandomId();
+  users[currentUserId] = { id: currentUserId, email: req.body.email, password: req.body.password };
+  res.cookie("user_id", currentUserId);
+  res.redirect("/urls");
 })
 
+
+// login and logout routes
 app.post("logout", (req, res) => {
   res.render("_header")
   res.clearCookie("user_id")
 })
+
+app.get("/login", (req, res) => {
+  res.render("login");
+})
+
+app.post("/login", (req, res) => {
+  let email = req.body.email
+  let password = req.body.password
+  console.log(`hi`)
+  const result = emailSearcher(email);
+if (result && passwordSearcher(password)) {
+  res.cookie("user_id", result.id)
+   return res.redirect("urls")
+  }
+  return res.redirect("/login");
+})
+
