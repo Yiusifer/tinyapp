@@ -32,16 +32,6 @@ function emailSearcher(userEmail) {
   }
   return false;
 }
-// Searches for existing password in database
-//REFRACTOR
-function passwordSearcher(userPassword) {
-  for (const user in users) {
-    if (users[user].password === userPassword) {
-      return true;
-    }
-  }
-  return false;
-}
 
 app.set("view engine", "ejs");
 
@@ -67,10 +57,6 @@ const users = {
 
 app.get("/", (req, res) => {
   res.send("Hello!");
-  const templateVars = {
-    username: req.cookies["username"],
-  };
-  res.render("_header", templateVars);
 });
 
 app.listen(PORT, () => {
@@ -78,7 +64,8 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { user_id: undefined };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -91,10 +78,6 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, user_id: req.cookies.user_id };
- /* if (res.cookie(user_id)) {
-
-  }*/
-  console.log(res.cookie("user_id"))
   res.render("urls_index", templateVars);
 
 });
@@ -107,8 +90,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  //console.log("req.body.longUrl", req.body.longURL);
-  //console.log("req.body.name", req.body.name);
+
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   //Sending shortURL to urls_show.ejs so it can link to relevant page
@@ -120,6 +102,7 @@ app.post("/urls", (req, res) => {
 
 // Redirects to corresponding long URL after receiving short URL
 app.get("/u/:shortURL", (req, res) => {
+  const templateVars = { user_id: undefined };
   const longURL = res.redirect(urlDatabase[req.params.shortURL]);
   res.redirect(longURL);
 });
@@ -138,7 +121,8 @@ app.post("/urls/:id", (req, res) => {
 
 // Handling user registration
 app.get("/register", (req, res) => {
-  res.render("registration");
+  const templateVars = { user_id: undefined };
+  res.render("registration", templateVars);
 })
 
 app.post("/register", (req, res) => {
@@ -149,33 +133,35 @@ app.post("/register", (req, res) => {
   if (emailSearcher(req.body.email)) {
     return res.status(400).send("This email is already in use: Error 404");
   }
-
+  // Create unique cookie value for user
   const currentUserId = generateRandomId();
   users[currentUserId] = { id: currentUserId, email: req.body.email, password: req.body.password };
   res.cookie("user_id", currentUserId);
+
   res.redirect("/urls");
 })
 
 
 // login and logout routes
-app.post("logout", (req, res) => {
-  res.render("_header")
-  res.clearCookie("user_id")
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id")//
+  res.send("Successful logout")//
 })
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  const templateVars = { user_id: undefined };
+  res.render("login", templateVars);
 })
 
 app.post("/login", (req, res) => {
-  let email = req.body.email
-  let password = req.body.password
-  console.log(`hi`)
+  let email = req.body.email;
+  let password = req.body.password;
   const result = emailSearcher(email);
-if (result && passwordSearcher(password)) {
-  res.cookie("user_id", result.id)
-   return res.redirect("urls")
+  if ((result) && result.password === req.body.password) {
+    res.cookie("user_id", result.id);
+    return res.redirect("urls");
   }
+  res.status(403).send("No user can be found at that email address");
   return res.redirect("/login");
 })
 
