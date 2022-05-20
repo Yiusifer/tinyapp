@@ -15,14 +15,11 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-// Generate random short URL
+// Generate random short URL/userId
 function generateRandomString() {
   return Math.random().toString(36).slice(2, 8);
 }
-// Random ID for user
-function generateRandomId() {
-  return Math.random().toString(36).slice(2, 8);
-}
+
 // Searches for existing email in database
 function emailSearcher(userEmail) {
   for (const user in users) {
@@ -91,13 +88,21 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
 
   // Updates url Database after creating new short url
-  urlDatabase[shortURL] = {longUrl: longURL, user_id: req.cookies.user_id};
+  urlDatabase[shortURL] = { longUrl: longURL, user_id: req.cookies.user_id };
   urlDatabase[shortURL].user_id = req.cookies.user_id;
   res.redirect(`/urls/${shortURL}`);
   console.log(urlDatabase);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if(!req.cookies.user_id) return res.status(402).send(`Error: Please login or register`);
+  if(!urlDatabase[req.params.shortURL]) {
+    return res.send(`Error: ${req.params.shortURL} does not match any existing tiny URL`);
+  }
+
+  if (req.cookies.user_id !== urlDatabase[req.params.shortURL].user_id) {
+    return res.send(`The tiny URL: ${req.params.shortURL} does not belong to you.`);
+  }
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   const templateVars = { shortURL, longURL, user_id: req.cookies.user_id };
@@ -120,9 +125,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 })
 
 app.post("/urls/:id", (req, res) => {
-  // Update urlDatabase with new url (longURL)
-  urlDatabase[req.params.id] = req.body.longUrl
-  res.redirect('/urls')
+  // Edits urlDatabase with new url(longURL)
+      urlDatabase[req.params.id].longUrl = req.body.longUrl;
+      return res.redirect('/urls');
 })
 
 // Handling user registration
@@ -140,7 +145,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("This email is already in use: Error 404");
   }
   // Create unique cookie value for user
-  const currentUserId = generateRandomId();
+  const currentUserId = generateRandomString;
   users[currentUserId] = { id: currentUserId, email: req.body.email, password: req.body.password };
   res.cookie("user_id", currentUserId);
 
