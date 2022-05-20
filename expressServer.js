@@ -6,6 +6,8 @@ var cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const { json } = require("express/lib/response");
 const req = require("express/lib/request");
+const bcrypt = require('bcryptjs');
+
 
 const PORT = 7000; // default port 7000
 
@@ -80,6 +82,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, user_id: req.cookies.user_id };
   res.render("urls_index", templateVars);
+  console.log(users)
 
 });
 
@@ -95,8 +98,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  if(!req.cookies.user_id) return res.status(402).send(`Error: Please login or register`);
-  if(!urlDatabase[req.params.shortURL]) {
+  if (!req.cookies.user_id) {
+    return res.status(402).send(`Error: Please login or register`);
+  }
+  if (!urlDatabase[req.params.shortURL]) {
     return res.send(`Error: ${req.params.shortURL} does not match any existing tiny URL`);
   }
 
@@ -126,8 +131,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   // Edits urlDatabase with new url(longURL)
-      urlDatabase[req.params.id].longUrl = req.body.longUrl;
-      return res.redirect('/urls');
+  urlDatabase[req.params.id].longUrl = req.body.longUrl;
+  return res.redirect('/urls');
 })
 
 // Handling user registration
@@ -145,8 +150,8 @@ app.post("/register", (req, res) => {
     return res.status(400).send("This email is already in use: Error 404");
   }
   // Create unique cookie value for user
-  const currentUserId = generateRandomString;
-  users[currentUserId] = { id: currentUserId, email: req.body.email, password: req.body.password };
+  const currentUserId = generateRandomString();
+  users[currentUserId] = { id: currentUserId, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10) };
   res.cookie("user_id", currentUserId);
 
   res.redirect("/urls");
@@ -166,9 +171,10 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   let email = req.body.email;
-  let password = req.body.password;
+  //let password = bcypt.hashSync(req.body.password, 10);
   const result = emailSearcher(email);
-  if ((result) && result.password === req.body.password) {
+  if (result && bcrypt.compareSync(req.body.password, result.password)) {
+    //result.password === req.body.password) {
     res.cookie("user_id", result.id);
     return res.redirect("urls");
   }
