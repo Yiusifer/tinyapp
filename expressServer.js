@@ -37,10 +37,15 @@ app.set("view engine", "ejs");
 
 // Databases
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
+  "b2xVn2": {
+    longUrl: "http://www.lighthouselabs.ca",
+    user_id: undefined
+  },
+  "9sm5xK": {
+    longUrl: "http://www.google.com",
+    user_id: undefined
+  }
+}
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -64,16 +69,15 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user_id: undefined };
+  const templateVars = { user_id: req.cookies.user_id };
+  if (!req.cookies.user_id) {
+    return res.redirect("/login");
+  }
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get("/urls", (req, res) => {
@@ -82,28 +86,30 @@ app.get("/urls", (req, res) => {
 
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  const templateVars = { shortURL, longURL };
-  res.render("urls_show", templateVars);
-});
-
 app.post("/urls", (req, res) => {
-
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  //Sending shortURL to urls_show.ejs so it can link to relevant page
-  //res.render("urls_show", shortURL);
-  urlDatabase[shortURL] = longURL;
+
+  // Updates url Database after creating new short url
+  urlDatabase[shortURL] = {longUrl: longURL, user_id: req.cookies.user_id};
+  urlDatabase[shortURL].user_id = req.cookies.user_id;
   res.redirect(`/urls/${shortURL}`);
   console.log(urlDatabase);
 });
 
+app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  const templateVars = { shortURL, longURL, user_id: req.cookies.user_id };
+  res.render("urls_show", templateVars);
+});
+
+
+
 // Redirects to corresponding long URL after receiving short URL
 app.get("/u/:shortURL", (req, res) => {
   const templateVars = { user_id: undefined };
-  const longURL = res.redirect(urlDatabase[req.params.shortURL]);
+  const longURL = urlDatabase[req.params.shortURL].longUrl;
   res.redirect(longURL);
 });
 
