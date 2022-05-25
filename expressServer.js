@@ -9,8 +9,7 @@ const { json } = require("express/lib/response");
 const req = require("express/lib/request");
 const bcrypt = require('bcryptjs');
 // Helper functions
-const {emailSearcher} = require("./helpers");
-const {generateRandomString} = require("./helpers");
+const { emailSearcher, generateRandomString } = require("./helpers");
 
 
 const PORT = 7000; // default port 7000
@@ -57,9 +56,6 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user_id: req.session.user_id };
@@ -173,3 +169,7 @@ app.post("/login", (req, res) => {
   return res.status(403).send("No user can be found at that email address");
 });
 
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
