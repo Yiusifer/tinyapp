@@ -4,9 +4,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Post URL shortening with the option to edit the current long URL"](https://github.com/Yiusifer/tinyapp/blob/master/docs/urls-id-page.png?raw=true)
-!["Creating a new short URL"](https://github.com/Yiusifer/tinyapp/blob/master/docs/urls-new-page.png?raw=true)
-!["App's homepage displaying all of the current user's URLs"](https://github.com/Yiusifer/tinyapp/blob/master/docs/urls-page.png?raw=true)
+!["After URL shortening with the option to edit the current long URL"](https://github.com/Yiusifer/tinyapp/blob/master/docs/editURL.png?raw=true)
+!["Creating a new short URL"](https://github.com/Yiusifer/tinyapp/blob/master/docs/createURL.png?raw=true)
+!["App's homepage displaying all of the current user's URLs"](https://github.com/Yiusifer/tinyapp/blob/master/docs/homepage.png?raw=true)
 
 ## Dependencies
 
