@@ -58,7 +58,7 @@ app.get("/", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user_id: req.session.user_id };
+  const templateVars = { user_id: req.session.user_id, users: users };
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
@@ -70,7 +70,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user_id: req.session.user_id };
+  const templateVars = { urls: urlDatabase, user_id: req.session.user_id, users: users };
   res.render("urls_index", templateVars);
   console.log(users);
 
@@ -100,7 +100,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
-  const templateVars = { shortURL, longURL, user_id: req.session.user_id };
+  const templateVars = { shortURL, longURL, user_id: req.session.user_id, users: users};
   res.render("urls_show", templateVars);
 });
 
@@ -126,7 +126,7 @@ app.post("/urls/:id", (req, res) => {
 
 // Handling user registration
 app.get("/register", (req, res) => {
-  const templateVars = { user_id: undefined };
+  const templateVars = { user_id: undefined, users: users };
   res.render("registration", templateVars);
 });
 
@@ -155,7 +155,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user_id: undefined };
+  const templateVars = { user_id: undefined, users: users };
   res.render("login", templateVars);
 });
 
