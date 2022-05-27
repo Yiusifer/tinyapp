@@ -2,7 +2,6 @@
 const express = require("express");
 const app = express();
 const res = require("express/lib/response");
-const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const { json } = require("express/lib/response");
@@ -16,7 +15,6 @@ const PORT = 7000; // default port 7000
 
 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
